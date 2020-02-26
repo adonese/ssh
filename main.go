@@ -6,6 +6,7 @@ import (
 	"log"
 	"bytes"
 	"flag"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 func main(){
@@ -27,12 +28,17 @@ func main(){
 
 	flag.Parse()
 	
+	keyCallBack, err := knownhosts.New("/home/adonese/.ssh/known_hosts")
+	if err != nil {
+		log.Printf("Error in knownhosts: %v", err)
+	}
+
 	config := &ssh.ClientConfig{
 		User: *username,
 		Auth: []ssh.AuthMethod{
 			ssh.Password(*sshPassword),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: keyCallBack,
 	}
 	client, err := ssh.Dial("tcp", *hostname + ":" + *port, config)
 	if err != nil {
